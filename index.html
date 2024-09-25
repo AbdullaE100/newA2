@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Population Density Map</title>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.22.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.6.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.21.0"></script>
+</head>
+<body>
+    <div id="vis"></div>
+    <script>
+        const spec = {
+          "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+          "title": {
+            "text": "World Population Density (2021)",
+            "subtitle": "Data source: world_population_density.csv",
+            "fontSize": 18,
+            "subtitleFontSize": 14
+          },
+          "width": 800,
+          "height": 400,
+          "projection": {
+            "type": "equalEarth" // This projection is chosen for its minimal distortion when visualizing global datasets.
+          },
+          "layer": [
+            {
+              "data": {
+                "url": "https://raw.githubusercontent.com/vega/vega-datasets/master/data/world-110m.json",
+                "format": {
+                  "type": "topojson",
+                  "feature": "countries"
+                }
+              },
+              "mark": {
+                "type": "geoshape",
+                "fill": "lightgray",
+                "stroke": "white"
+              }
+            },
+            {
+              "data": {
+                "url": "https://raw.githubusercontent.com/vega/vega-datasets/master/data/graticule.json"
+              },
+              "mark": {
+                "type": "geoshape",
+                "fill": null,
+                "stroke": "#ccc"
+              },
+              "transform": [
+                { "graticule": { "step": [30, 30] } } // Graticule with a 30-degree resolution.
+              ]
+            },
+            {
+              "data": {
+                "url": "https://raw.githubusercontent.com/vega/vega-datasets/master/data/world-110m.json",
+                "format": {
+                  "type": "topojson",
+                  "feature": "countries"
+                }
+              },
+              "transform": [
+                {
+                  "lookup": "id",
+                  "from": {
+                    "data": {
+                      "url": "https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries.json"
+                    },
+                    "key": "id",
+                    "fields": ["name"]
+                  }
+                },
+                {
+                  "lookup": "name",
+                  "from": {
+                    "data": {
+                      // Use your GitHub URL here
+                      "url": "https://your-github-link/world_population_density.csv",
+                      "format": {"type": "csv"}
+                    },
+                    "key": "country",
+                    "fields": ["density"]
+                  }
+                }
+              ],
+              "mark": {"type": "geoshape", "stroke": "white"},
+              "encoding": {
+                "color": {
+                  "field": "density",
+                  "type": "quantitative",
+                  "scale": {
+                    "type": "threshold",
+                    "domain": [20, 100, 500, 1000],
+                    "range": ["#fee5d9", "#fcae91", "#fb6a4a", "#de2d26", "#a50f15"]
+                  },
+                  "title": "Population per km²",
+                  "legend": {
+                    "titleFontSize": 12,
+                    "labelFontSize": 10
+                  }
+                },
+                "tooltip": [
+                  {"field": "name", "type": "nominal", "title": "Country"},
+                  {"field": "density", "type": "quantitative", "title": "Population Density"}
+                ]
+              }
+            }
+          ]
+        };
+        vegaEmbed('#vis', spec);
+    </script>
+</body>
+</html>
